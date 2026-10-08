@@ -37,7 +37,7 @@ final class StatusBarController: NSObject {
             } else {
                 let statusItem = StatusItemCenter.shared.add()
                 if let button = statusItem.button {
-                    button.title = "\(widget.emoji) …"
+                    button.title = title(for: widget, text: "…")
                     button.font = NSFont.menuBarFont(ofSize: 0)
                 }
                 statusItem.menu = makeMenu(for: widget)
@@ -61,7 +61,7 @@ final class StatusBarController: NSObject {
     private func refresh(_ widget: Widget) {
         guard let item = items[widget.id] else { return }
         if let button = item.statusItem.button, item.lastResult == nil {
-            button.title = "\(widget.emoji) …"
+            button.title = title(for: widget, text: "…")
         }
         WidgetRunner.run(widget.command) { [weak self] result in
             guard let self, var current = self.items[widget.id] else { return }
@@ -69,11 +69,17 @@ final class StatusBarController: NSObject {
             current.lastRun = Date()
             self.items[widget.id] = current
             if let button = current.statusItem.button {
-                button.title = "\(widget.emoji) \(WidgetRunner.displayText(for: result))"
+                button.title = self.title(for: widget, text: WidgetRunner.displayText(for: result))
                 button.toolTip = self.tooltip(for: widget, result: result)
             }
             current.statusItem.menu = self.makeMenu(for: widget)
         }
+    }
+
+    /// "emoji text" — or just "text" when the emoji field is blank.
+    private func title(for widget: Widget, text: String) -> String {
+        let emoji = widget.emoji.trimmingCharacters(in: .whitespaces)
+        return emoji.isEmpty ? text : "\(emoji) \(text)"
     }
 
     private func tooltip(for widget: Widget, result: RunResult) -> String {
@@ -145,11 +151,20 @@ final class StatusBarController: NSObject {
             window.title = "GenMonBar Settings"
             window.styleMask = [.titled, .closable, .miniaturizable]
             window.isReleasedWhenClosed = false
+            window.level = .floating
+            window.collectionBehavior.insert(.fullScreenAuxiliary)
             window.setContentSize(NSSize(width: 560, height: 420))
             settingsWindow = window
         }
         NSApp.activate(ignoringOtherApps: true)
+        settingsWindow?.orderFrontRegardless()
         settingsWindow?.makeKeyAndOrderFront(nil)
+        // Activation of an LSUIElement app is async; re-assert key status next runloop tick.
+        DispatchQueue.main.async { [weak self] in
+            guard let window = self?.settingsWindow else { return }
+            NSApp.activate(ignoringOtherApps: true)
+            window.makeKeyAndOrderFront(nil)
+        }
     }
 
     @objc private func quit() {

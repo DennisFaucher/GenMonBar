@@ -53,6 +53,7 @@ final class ConfigStore {
     func update(_ transform: (inout Config) -> Void) {
         transform(&config)
         save()
+        notify()
     }
 
     func save() {
@@ -78,6 +79,8 @@ final class ConfigStore {
     }
 
     private func startWatching() {
+        fileWatcher?.cancel()
+        fileWatcher = nil
         let fd = open(configURL.path, O_EVTONLY)
         guard fd >= 0 else { return }
         let source = DispatchSource.makeFileSystemObjectSource(
@@ -86,7 +89,10 @@ final class ConfigStore {
             queue: .main
         )
         source.setEventHandler { [weak self] in
-            self?.reloadIfChanged()
+            guard let self else { return }
+            // Editors replace the file (rename), which invalidates the fd — always re-arm.
+            self.startWatching()
+            self.reloadIfChanged()
         }
         source.setCancelHandler { close(fd) }
         source.resume()
