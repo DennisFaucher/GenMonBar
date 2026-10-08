@@ -6,6 +6,8 @@ A macOS menu bar app inspired by the [XFCE Generic Monitor plugin](https://docs.
 🍺 3          🧠 42%          📦 12
 ```
 
+<img width="310" height="207" alt="image" src="https://github.com/user-attachments/assets/cf812727-ef04-49d5-8765-141425b1b446" />
+
 ## Build & run
 
 ```sh
