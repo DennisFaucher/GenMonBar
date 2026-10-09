@@ -8,6 +8,32 @@ A macOS menu bar app inspired by the [XFCE Generic Monitor plugin](https://docs.
 
 <img width="310" height="207" alt="image" src="https://github.com/user-attachments/assets/cf812727-ef04-49d5-8765-141425b1b446" />
 
+## Install
+
+Via [Homebrew](https://brew.sh) (personal tap):
+
+```sh
+brew install --cask DennisFaucher/tap/genmonbar
+```
+
+> GenMonBar is not Developer ID signed/notarized, so macOS Gatekeeper blocks it on first launch. Right-click `/Applications/GenMonBar.app` and choose **Open**, or run:
+>
+> ```sh
+> xattr -dr com.apple.quarantine "/Applications/GenMonBar.app"
+> ```
+>
+> You can also install without the quarantine attribute: `brew install --cask --no-quarantine DennisFaucher/tap/genmonbar`
+
+Update / uninstall:
+
+```sh
+brew upgrade --cask genmonbar
+brew uninstall --cask genmonbar        # add --zap to also remove its config
+```
+
+Or download the latest `GenMonBar.app.zip` from the [releases page](https://github.com/DennisFaucher/GenMonBar/releases).
+
+
 ## Build & run
 
 ```sh
